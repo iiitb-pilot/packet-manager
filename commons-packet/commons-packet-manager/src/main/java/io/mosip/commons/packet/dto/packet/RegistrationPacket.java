@@ -12,7 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +22,8 @@ import java.util.Map;
 public class RegistrationPacket {
 
 	private static final Logger LOGGER = PacketManagerLogger.getLogger(RegistrationPacket.class);
-	
+	private static final ObjectMapper mapper=new ObjectMapper();
+
 	private String registrationId;
 	private double idSchemaVersion;
 	private String creationDate;
@@ -47,19 +47,19 @@ public class RegistrationPacket {
 	public void setField(String fieldName, String value) {
 		setFields(fieldName, value, demographics);
 	}
-	
+
 	public void setFields(Map<String, String> fields) {
 		fields.entrySet().forEach(entry -> {
 			setFields(entry.getKey(), entry.getValue(), demographics);
 		});
 	}
-	
+
 	public void setBiometricField(String fieldName, BiometricRecord value) {
 		this.biometrics.put(fieldName, value);
 	}
-	
+
 	public void setDocumentField(String fieldName, Document dto) {
-		this.documents.put(fieldName, dto);		
+		this.documents.put(fieldName, dto);
 	}
 
 	public void setMetaData(Map<String, String> metaInfo) {
@@ -85,7 +85,7 @@ public class RegistrationPacket {
 			if (value != null) {
 				Object json = new JSONTokener(value).nextValue();
 				if (json instanceof JSONObject) {
-					HashMap<String, Object> hashMap = new ObjectMapper().readValue(value, HashMap.class);
+					HashMap<String, Object> hashMap = mapper.readValue(value, HashMap.class);
 					finalMap.putIfAbsent(fieldName, hashMap);
 				}
 				else if (json instanceof JSONArray) {
@@ -93,8 +93,7 @@ public class RegistrationPacket {
 					JSONArray jsonArray = new JSONArray(value);
 					for (int i = 0; i < jsonArray.length(); i++) {
 						Object obj = jsonArray.get(i);
-						HashMap<String, Object> hashMap = new ObjectMapper().readValue(obj.toString(), HashMap.class);
-						jsonList.add(hashMap);
+						jsonList.add(obj instanceof org.json.JSONObject ? mapper.readValue(obj.toString(), HashMap.class):obj);
 					}
 					finalMap.putIfAbsent(fieldName, jsonList);
 				} else
