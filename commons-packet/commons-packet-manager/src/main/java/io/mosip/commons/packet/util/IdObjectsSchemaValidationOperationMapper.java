@@ -28,7 +28,15 @@ public class IdObjectsSchemaValidationOperationMapper {
 		RES_UPDATE("RES_UPDATE"),
 
 		/** The res re-print. */
-		RES_REPRINT("RES_REPRINT");
+		RES_REPRINT("RES_REPRINT"),
+
+		/** The CRVS Flow. */
+		CRVS_NEW("CRVS_NEW"),
+
+		CRVS_UPDATE("CRVS_UPDATE"),
+
+		CRVS_DEATH("CRVS_DEATH");
+
 
 		/** The value. */
 		private String value;
@@ -105,6 +113,23 @@ public class IdObjectsSchemaValidationOperationMapper {
 					"IdObjectsSchemaValidationOperationMapper::getOperation()::exit-UPDATE");
 			return IdObjectValidatorSupportedOperations.OTHER;
 		}
+		else if(process.equalsIgnoreCase(SyncTypeDto.CRVS_NEW.getValue())) {
+			LOGGER.debug(PacketManagerLogger.SESSIONID.toString(),PacketManagerLogger.REGISTRATIONID.toString(), "",
+					"IdObjectsSchemaValidationOperationMapper::getOperation()::exit-CRVS_NEW");
+			return IdObjectValidatorSupportedOperations.NEW_REGISTRATION;
+		}
+
+		else if(process.equalsIgnoreCase(SyncTypeDto.CRVS_UPDATE.getValue())) {
+			LOGGER.debug(PacketManagerLogger.SESSIONID.toString(), PacketManagerLogger.REGISTRATIONID.toString(), "",
+					"IdObjectsSchemaValidationOperationMapper::getOperation()::exit-CRVS_UPDATE");
+			return IdObjectValidatorSupportedOperations.OTHER;
+		}
+
+		else if(process.equalsIgnoreCase(SyncTypeDto.CRVS_DEATH.getValue())) {
+			LOGGER.debug(PacketManagerLogger.SESSIONID.toString(),PacketManagerLogger.REGISTRATIONID.toString(),"",
+					"IdObjectsSchemaValidationOperationMapper::getOperation()::exit-CRVS_DEATH");
+			return IdObjectValidatorSupportedOperations.OTHER;
+		}
 		else if(process.matches(SyncTypeDto.RES_UPDATE.getValue())) {
 			LOGGER.debug(PacketManagerLogger.SESSIONID.toString(), PacketManagerLogger.REGISTRATIONID.toString(), "",
 					"IdObjectsSchemaValidationOperationMapper::getOperation()::exit-RES_UPDATE");
@@ -120,7 +145,10 @@ public class IdObjectsSchemaValidationOperationMapper {
 					"IdObjectsSchemaValidationOperationMapper::getOperation()::exit-DEACTIVATED");
 			return IdObjectValidatorSupportedOperations.OTHER;
 		}
-		return null;
+
+
+		throw new IllegalArgumentException(
+				"Unsupported process type: " + process);
 		
 	}
 
