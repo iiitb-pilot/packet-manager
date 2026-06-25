@@ -120,9 +120,12 @@ public class OnlinePacketCryptoServiceImpl implements IPacketCryptoService {
         byte[] encryptedPacket = null;
 
         try {
-            String centerId = id.substring(0, centerIdLength);
-            String machineId = id.substring(centerIdLength, centerIdLength + machineIdLength);
-            String refId = centerId + "_" + machineId;
+            String refId="";
+            if(id.length()==29) {
+                String centerId = id.substring(0, centerIdLength);
+                String machineId = id.substring(centerIdLength, centerIdLength + machineIdLength);
+                 refId = centerId + "_" + machineId;
+            }
             String packetString = CryptoUtil.encodeBase64String(packet);
             CryptomanagerRequestDto cryptomanagerRequestDto = new CryptomanagerRequestDto();
             RequestWrapper<CryptomanagerRequestDto> request = new RequestWrapper<>();
@@ -138,19 +141,21 @@ public class OnlinePacketCryptoServiceImpl implements IPacketCryptoService {
             sRandom.nextBytes(aad);
             cryptomanagerRequestDto.setAad(CryptoUtil.encodeBase64String(aad));
             cryptomanagerRequestDto.setSalt(CryptoUtil.encodeBase64String(nonce));
-            // setLocal Date Time
-            if (id.length() > 14) {
-                String packetCreatedDateTime = id.substring(id.length() - 14);
-                String formattedDate = packetCreatedDateTime.substring(0, 8) + "T"
-                        + packetCreatedDateTime.substring(packetCreatedDateTime.length() - 6);
+            cryptomanagerRequestDto.setTimeStamp(DateUtils.getUTCCurrentDateTime());
 
-                cryptomanagerRequestDto.setTimeStamp(
-                        LocalDateTime.parse(formattedDate, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")));
-            } else {
-                LOGGER.error(PacketManagerLogger.SESSIONID, PacketManagerLogger.REGISTRATIONID, id,
-                        "Packet encryption Failed-Invalid datetime format");
-                throw new PacketDecryptionFailureException("Packet encryption Failed-Invalid datetime format");
-            }
+//            // setLocal Date Time
+//            if (id.length() > 14) {
+//                String packetCreatedDateTime = id.substring(id.length() - 14);
+//                String formattedDate = packetCreatedDateTime.substring(0, 8) + "T"
+//                        + packetCreatedDateTime.substring(packetCreatedDateTime.length() - 6);
+//
+//                cryptomanagerRequestDto.setTimeStamp(
+//                        LocalDateTime.parse(formattedDate, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")));
+//            } else {
+//                LOGGER.error(PacketManagerLogger.SESSIONID, PacketManagerLogger.REGISTRATIONID, id,
+//                        "Packet encryption Failed-Invalid datetime format");
+//                throw new PacketDecryptionFailureException("Packet encryption Failed-Invalid datetime format");
+//            }
             request.setId(DECRYPT_SERVICE_ID);
             request.setMetadata(null);
             request.setRequest(cryptomanagerRequestDto);
@@ -206,9 +211,12 @@ public class OnlinePacketCryptoServiceImpl implements IPacketCryptoService {
         byte[] decryptedPacket = null;
 
         try {
-            String centerId = id.substring(0, centerIdLength);
-            String machineId = id.substring(centerIdLength, centerIdLength + machineIdLength);
-            String refId = centerId + "_" + machineId;
+            String refId="";
+            if(id.length()>=(centerIdLength+machineIdLength+14)) {
+                String centerId = id.substring(0, centerIdLength);
+                String machineId = id.substring(centerIdLength, centerIdLength + machineIdLength);
+                refId = centerId + "_" + machineId;
+            }
             CryptomanagerRequestDto cryptomanagerRequestDto = new CryptomanagerRequestDto();
             RequestWrapper<CryptomanagerRequestDto> request = new RequestWrapper<>();
             cryptomanagerRequestDto.setApplicationId(APPLICATION_ID);
@@ -222,19 +230,22 @@ public class OnlinePacketCryptoServiceImpl implements IPacketCryptoService {
             cryptomanagerRequestDto.setSalt(CryptoUtil.encodeBase64String(nonce));
             cryptomanagerRequestDto.setData(CryptoUtil.encodeBase64String(encryptedData));
             cryptomanagerRequestDto.setPrependThumbprint(isPrependThumbprintEnabled);
-            // setLocal Date Time
-            if (id.length() > 14) {
-                String packetCreatedDateTime = id.substring(id.length() - 14);
-                String formattedDate = packetCreatedDateTime.substring(0, 8) + "T"
-                        + packetCreatedDateTime.substring(packetCreatedDateTime.length() - 6);
+            cryptomanagerRequestDto.setTimeStamp(DateUtils.getUTCCurrentDateTime());
 
-                cryptomanagerRequestDto.setTimeStamp(
-                        LocalDateTime.parse(formattedDate, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")));
-            } else {
-                LOGGER.error(PacketManagerLogger.SESSIONID, PacketManagerLogger.REGISTRATIONID, id,
-                        "Packet DecryptionFailed-Invalid Packet format");
-                throw new PacketDecryptionFailureException("Packet DecryptionFailed-Invalid Packet format");
-            }
+
+//            // setLocal Date Time
+//            if (id.length() > 14) {
+//                String packetCreatedDateTime = id.substring(id.length() - 14);
+//                String formattedDate = packetCreatedDateTime.substring(0, 8) + "T"
+//                        + packetCreatedDateTime.substring(packetCreatedDateTime.length() - 6);
+//
+//                cryptomanagerRequestDto.setTimeStamp(
+//                        LocalDateTime.parse(formattedDate, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")));
+//            } else {
+//                LOGGER.error(PacketManagerLogger.SESSIONID, PacketManagerLogger.REGISTRATIONID, id,
+//                        "Packet DecryptionFailed-Invalid Packet format");
+//                throw new PacketDecryptionFailureException("Packet DecryptionFailed-Invalid Packet format");
+//            }
             request.setId(DECRYPT_SERVICE_ID);
             request.setMetadata(null);
             request.setRequest(cryptomanagerRequestDto);
